@@ -1,53 +1,119 @@
 import streamlit as st
-from openai import OpenAI
+import pandas as pd
+from pandas.core.frame import DataFrame
+from youtube_comment_downloader import *
+import io
+import openai
 
-# Show title and description.
-st.title("📄 Document question answering")
-st.write(
-    "Upload a document below and ask a question about it – GPT will answer! "
-    "To use this app, you need to provide an OpenAI API key, which you can get [here](https://platform.openai.com/account/api-keys). "
-)
-
-# Ask user for their OpenAI API key via `st.text_input`.
-# Alternatively, you can store the API key in `./.streamlit/secrets.toml` and access it
-# via `st.secrets`, see https://docs.streamlit.io/develop/concepts/connections/secrets-management
-openai_api_key = st.text_input("OpenAI API Key", type="password")
-if not openai_api_key:
-    st.info("Please add your OpenAI API key to continue.", icon="🗝️")
-else:
-
-    # Create an OpenAI client.
-    client = OpenAI(api_key=openai_api_key)
-
-    # Let the user upload a file via `st.file_uploader`.
-    uploaded_file = st.file_uploader(
-        "Upload a document (.txt or .md)", type=("txt", "md")
-    )
-
-    # Ask the user for a question via `st.text_area`.
-    question = st.text_area(
-        "Now ask a question about the document!",
-        placeholder="Can you give me a short summary?",
-        disabled=not uploaded_file,
-    )
-
-    if uploaded_file and question:
-
-        # Process the uploaded file and question.
-        document = uploaded_file.read().decode()
-        messages = [
-            {
-                "role": "user",
-                "content": f"Here's a document: {document} \n\n---\n\n {question}",
-            }
-        ]
-
-        # Generate an answer using the OpenAI API.
-        stream = client.chat.completions.create(
+# Function to summarize text using OpenAI ChatGPT API
+def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
+    """
+    Summarizes the given text using OpenAI's GPT API.
+    
+    Args:
+        input_text (str): The text to summarize.
+        api_key (str): Your OpenAI API key.
+        max_tokens (int): Maximum tokens for the summary.
+    
+    Returns:
+        str: The summarized text.
+    """
+    try:
+        openai.api_key = api_key
+        response = openai.ChatCompletion.create(
             model="gpt-3.5-turbo",
-            messages=messages,
-            stream=True,
+            messages=[{"role": "user", "content": f"Summarize this text: {input_text}"}],
+            max_tokens=max_tokens,
+            temperature=0.7
         )
+        return response['choices'][0]['message']['content'].strip()
+    except Exception as e:
+        return f"Error during summarization: {e}"
 
-        # Stream the response to the app using `st.write_stream`.
-        st.write_stream(stream)
+@st.cache
+def youtube_url_to_df(Youtube_URL: str) -> DataFrame:
+    """Fetch comments from a YouTube video and return as a DataFrame."""
+    try:
+        downloader = YoutubeCommentDownloader()
+        comments = downloader.get_comments_from_url(Youtube_URL, sort_by=SORT_BY_POPULAR)
+        
+        all_comments_dict = {
+            'cid': [],
+            'text': [],
+            'time': [],
+            'author': [],
+            'channel': [],
+            'votes': [],
+            'replies': [],
+            'photo': [],
+            'heart': [],
+            'reply': [],
+            'time_parsed': []
+        }
+        
+        for comment in comments:
+            for key in all_comments_dict.keys():
+                all_comments_dict[key].append(comment[key])
+        
+        comments_df = pd.DataFrame(all_comments_dict)
+        return comments_df
+    
+    except Exception as error:
+        if Youtube_URL != "":
+            st.exception(error)
+        return None
+
+def download_df(df: DataFrame, label: str) -> None:
+    """Add a button to download the DataFrame."""
+    format_download = st.radio("Choose download format:", ['CSV', 'Excel'])
+    
+    if format_download == 'CSV':
+        download_format = 'text/csv'
+        file_extension = 'csv'
+        data_df = df.to_csv(index=False)
+    elif format_download == 'Excel':
+        download_format = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+        file_extension = 'xlsx'
+        excel_bytes = io.BytesIO()
+        data_df = excel_bytes
+        
+    try:
+        st.download_button(label=f"Download {label} DataFrame ({format_download})", 
+                           data=data_df, 
+                           file_name=f'dataframe.{file_extension}', 
+                           mime=download_format)
+    except Exception as error:
+        st.exception(error)
+
+def main():
+    st.header("YouTube Comments Downloader and Summarizer")
+    st.write("Download and summarize comments from YouTube videos effortlessly.")
+    
+    st.divider()
+    
+    url_text = st.text_input("Enter YouTube URL")
+    api_key = st.text_input("Enter OpenAI API Key", type="password")
+    
+    raw_df = youtube_url_to_df(url_text)
+    
+    if raw_df is None or raw_df.empty:
+        st.info('Please enter a valid YouTube link.')
+    else:
+        download_df(raw_df, "Raw")
+        
+        # Display raw comments
+        st.subheader("Raw Comments")
+        st.dataframe(raw_df[['text']].head(10))  # Show top 10 comments
+        
+        # Combine all comments into one text for summarization
+        combined_comments = " ".join(raw_df['text'].tolist())
+        
+        if api_key:
+            with st.spinner("Summarizing comments..."):
+                summary = summarize_text(combined_comments, api_key)
+                st.subheader("Summary of Comments")
+                st.write(summary)
+        else:
+            st.warning("Please provide your OpenAI API key to generate summaries.")
+
+main()
