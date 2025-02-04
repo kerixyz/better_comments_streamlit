@@ -25,9 +25,11 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str
     ]
 
     try:
+        # client = OpenAI(api_key=api_key)
         client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
         response = client.chat.completions.create(
-            model="sonar",
+            # model = "gpt-4o",
+            model="sonar-pro",
             messages=messages,
             max_tokens=max_tokens,
             temperature=0.7
@@ -98,7 +100,9 @@ def main():
     st.divider()
     
     url_text = st.text_input("Enter YouTube URL")
-    api_key = st.text_input("Enter OpenAI API Key", type="password")
+    # api_key = st.text_input("Enter OpenAI API Key", type="password")
+    api_key = st.text_input("Enter Perplexity API Key", type="password")
+    
     
     raw_df = youtube_url_to_df(url_text)
     
