@@ -6,7 +6,7 @@ import io
 from openai import OpenAI
 
 # Function to summarize text using OpenAI ChatGPT API
-def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
+def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str:
     """
     Summarizes the given text using OpenAI's GPT API.
     
