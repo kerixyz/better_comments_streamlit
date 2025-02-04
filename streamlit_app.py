@@ -30,7 +30,7 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
     except Exception as e:
         return f"Error during summarization: {e}"
 
-@st.cache
+@st.cache_data
 def youtube_url_to_df(Youtube_URL: str) -> DataFrame:
     """Fetch comments from a YouTube video and return as a DataFrame."""
     try:
