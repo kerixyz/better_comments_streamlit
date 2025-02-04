@@ -3,7 +3,7 @@ import pandas as pd
 from pandas.core.frame import DataFrame
 from youtube_comment_downloader import *
 import io
-import openai
+from openai import OpenAI
 
 # Function to summarize text using OpenAI ChatGPT API
 def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
@@ -19,9 +19,9 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
         str: The summarized text.
     """
     try:
-        openai.api_key = api_key
-        response = openai.ChatCompletion.create(
-            model="gpt-3.5-turbo",
+        client = OpenAI(api_key=api_key)
+        response = client.chat.completions.create(
+            model="gpt-4o",
             messages=[{"role": "user", "content": f"Summarize this text: {input_text}"}],
             max_tokens=max_tokens,
             temperature=0.7
