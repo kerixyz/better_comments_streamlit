@@ -25,7 +25,7 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str
     ]
 
     try:
-        client = OpenAI(api_key=api_key)
+        client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
         response = client.chat.completions.create(
             model="gpt-4o",
             messages=messages,
