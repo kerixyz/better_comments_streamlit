@@ -18,11 +18,17 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 100) -> str:
     Returns:
         str: The summarized text.
     """
+
+    messages = [
+        {"role": "system", "content": "You are an AI assistant focused on helping content creators to improve and grow their channels."},
+        {"role": "user", "content": f"Summarize this text: {input_text} into five categories: 'why viewers watch', 'how to improve', 'how to improve content production' , 'how to improve channel growth', 'how to improve engagement'."}
+    ]
+
     try:
         client = OpenAI(api_key=api_key)
         response = client.chat.completions.create(
             model="gpt-4o",
-            messages=[{"role": "user", "content": f"Summarize this text: {input_text}"}],
+            messages=messages,
             max_tokens=max_tokens,
             temperature=0.7
         )
@@ -101,7 +107,6 @@ def main():
     else:
         download_df(raw_df, "Raw")
         
-        # Display raw comments
         st.subheader("Raw Comments")
         st.dataframe(raw_df[['text']].head(10))  # Show top 10 comments
         
