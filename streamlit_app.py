@@ -21,7 +21,7 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str
 
     messages = [
         {"role": "system", "content": "You are an AI assistant focused on helping content creators to improve and grow their channels."},
-        {"role": "user", "content": f"Summarize this text: {input_text} into five categories: 'why viewers watch', 'how to improve', 'how to improve content production' , 'how to improve channel growth', 'how to improve engagement'."}
+        {"role": "user", "content": f"Summarize this text: {input_text} into five headers: 'why viewers watch', 'how to improve', 'how to improve content production' , 'how to improve channel growth', 'how to improve engagement'."}
     ]
 
     try:
