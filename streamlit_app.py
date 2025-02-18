@@ -7,25 +7,9 @@ from openai import OpenAI
 
 # Function to summarize text using OpenAI ChatGPT API
 def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str:
-    """
-    Summarizes the given text using OpenAI's GPT API.
     
-    Args:
-        input_text (str): The text to summarize.
-        api_key (str): Your OpenAI API key.
-        max_tokens (int): Maximum tokens for the summary.
-    
-    Returns:
-        str: The summarized text.
-    """
-
-    messages = [
-        {"role": "system", "content": "You are an AI assistant focused on helping content creators to improve and grow their channels."},
-        {"role": "user", "content": f"Summarize this text: {input_text} into five headers: 'why viewers watch', 'how to improve', 'how to improve content production' , 'how to improve channel growth', 'how to improve engagement'."}
-    ]
 
     try:
-        # client = OpenAI(api_key=api_key)
         client = OpenAI(api_key=api_key, base_url="https://api.perplexity.ai")
         response = client.chat.completions.create(
             # model = "gpt-4o",
@@ -98,7 +82,6 @@ def main():
     st.divider()
     
     url_text = st.text_input("Enter YouTube URL")
-    # api_key = st.text_input("Enter OpenAI API Key", type="password")
     api_key = st.text_input("Enter Perplexity API Key", type="password")
     
     raw_df = youtube_url_to_df(url_text)
@@ -119,6 +102,6 @@ def main():
                 st.subheader("Summary of Comments")
                 st.write(summary)
         else:
-            st.warning("Please provide your OpenAI API key to generate summaries.")
+            st.warning("Please provide your API key to generate summaries.")
 
 main()
