@@ -40,7 +40,6 @@ def summarize_text(input_text: str, api_key: str, max_tokens: int = 1500) -> str
 
 @st.cache_data
 def youtube_url_to_df(Youtube_URL: str) -> DataFrame:
-    """Fetch comments from a YouTube video and return as a DataFrame."""
     try:
         downloader = YoutubeCommentDownloader()
         comments = downloader.get_comments_from_url(Youtube_URL, sort_by=SORT_BY_POPULAR)
@@ -72,7 +71,6 @@ def youtube_url_to_df(Youtube_URL: str) -> DataFrame:
         return None
 
 def download_df(df: DataFrame, label: str) -> None:
-    """Add a button to download the DataFrame."""
     format_download = st.radio("Choose download format:", ['CSV', 'Excel'])
     
     if format_download == 'CSV':
@@ -103,7 +101,6 @@ def main():
     # api_key = st.text_input("Enter OpenAI API Key", type="password")
     api_key = st.text_input("Enter Perplexity API Key", type="password")
     
-    
     raw_df = youtube_url_to_df(url_text)
     
     if raw_df is None or raw_df.empty:
@@ -114,7 +111,6 @@ def main():
         st.subheader("Raw Comments")
         st.dataframe(raw_df[['text']].head(10))  # Show top 10 comments
         
-        # Combine all comments into one text for summarization
         combined_comments = " ".join(raw_df['text'].tolist())
         
         if api_key:
