@@ -1,13 +1,5 @@
-### How to run it on your own machine
+streamlit + python
 
-1. Install the requirements
-
-   ```
-   $ pip install -r requirements.txt
-   ```
-
-2. Run the app
-
-   ```
-   $ streamlit run streamlit_app.py
-   ```
+input perplexity/openai key and a youtube video link
+download comments into csv/excel
+generate summaries of comments 
